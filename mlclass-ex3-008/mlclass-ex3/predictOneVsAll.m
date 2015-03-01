@@ -30,11 +30,15 @@ X = [ones(m, 1) X];
 %       for each row.
 %       
 
+p_prob = zeros(m, num_labels);
 
+for iter = 1:num_labels
+	p_prob(:,iter) = X*(all_theta(iter,:))';
+end
 
-
-
-
+for iter = 1:m
+	p(iter) = find(p_prob(iter,:) == max(p_prob(iter,:)));
+end
 
 % =========================================================================
 
