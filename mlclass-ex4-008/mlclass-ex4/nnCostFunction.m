@@ -24,6 +24,8 @@ Theta2 = reshape(nn_params((1 + (hidden_layer_size * (input_layer_size + 1))):en
 
 % Setup some useful variables
 m = size(X, 1);
+
+X = [ones(m, 1) X];
          
 % You need to return the following variables correctly 
 J = 0;
@@ -62,23 +64,54 @@ Theta2_grad = zeros(size(Theta2));
 %               and Theta2_grad from Part 2.
 %
 
+%==========Cost function================
+% vectorize y as output layer format
+y_vec = zeros(m, size(Theta2, 1));
+for iter = 1:m
+	y_vec(iter, y(iter)) = 1;
+end
+
+a2 = sigmoid(X*(Theta1)');
+a2 = [ones(size(a2, 1), 1) a2];
+a3 = sigmoid(a2*(Theta2)');
+
+J = sum((sum(-y_vec.*log(a3) - (1-y_vec).*log(1-a3)))')/m + (sum((sum((Theta1(:,2:end)).^2))') + sum((sum((Theta2(:,2:end)).^2))'))*lambda/(2*m);
+%=======================================
 
 
+%======Backpropagation algorithm========
+DELTA1 = zeros(size(Theta1_grad));
+DELTA2 = zeros(size(Theta2_grad));
 
+for t = 1:m
+	a_1 = X(t, :);
+	z_2 = a_1*(Theta1)';
+	z_2 = [99999 z_2];
+	a_2 = sigmoid(z_2);
+	% a_2 = [ones(size(a_2, 1), 1) a_2];
+	z_3 = a_2*(Theta2)';
+	a_3 = sigmoid(z_3);
 
+	delta_3 = a_3 - y_vec(t, :);
 
+	% delta_2 = (Theta2)'*delta_3.*sigmoidGradient(z_2);
+	delta_2 = delta_3*Theta2.*sigmoidGradient(z_2);
+	delta_2 = delta_2(2:end);
 
+	DELTA1 = DELTA1 + (delta_2)'*a_1;
+	DELTA2 = DELTA2 + (delta_3)'*a_2;
+end
 
+Theta1_grad = DELTA1/m;
+Theta2_grad = DELTA2/m;
+%=======================================
 
-
-
-
-
-
-
-
-
-
+%============regularization=============
+Theta1_grad = Theta1_grad + Theta1*lambda/m;
+Theta2_grad = Theta2_grad + Theta2*lambda/m;
+Theta1_grad(:,1) = DELTA1(:,1)/m;
+Theta2_grad(:,1) = DELTA2(:,1)/m;
+%=======================================
 
 % -------------------------------------------------------------
 
